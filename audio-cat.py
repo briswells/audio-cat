@@ -68,6 +68,7 @@ def main():
         audiobook.export(name + "." + export, format=export)
     except:
         print("Unable to export to requested format. Overriding to .WAV")
+        os.remove(name + "." + export)
         audiobook.export(name + "." + "wav", format="wav")
 
 

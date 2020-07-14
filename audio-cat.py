@@ -3,31 +3,47 @@ from pydub import AudioSegment
 import os
 import re
 import sys
+import argparse
 
 debug = False
 
 def print_help():
-    print("Usage: audio-cat [input filepath] [export filename] [export format]")
-    print("Required:\n  [input filepath] [export filename]")
-    print("Optional:\n  [export format] -- will default to .wav")
+    print("Usage: audio-cat [options] [export filename] [input filepath]")
+    print("Required:\n\t[input filepath] [export filename]")
+    print("Optional:\n\t[-f export format]  will default to .wav\n\t[-m] enables multiprocess execution")
+    print('Example:\n\t python audio-cat -f mp3 -m "The Night Circus" "C:/Documents/The Night Circus"')
 
-def arg_check(argv):
-    if argv[1] == "--help":
+def arg_parse(parser):
+    parser.add_argument('-help', action='store_true',
+                        default=False,
+                        dest='help')
+
+    parser.add_argument('-m', action='store_true',
+                        default=False,
+                        dest='multi')
+
+    parser.add_argument('-f', action='store',
+                        default="wav",
+                        dest='format')
+
+    parser.add_argument('name', nargs='?', default='null')
+    parser.add_argument('filepath', nargs='?', default='null')
+
+    results = parser.parse_args()
+    print(results)
+
+    if results.help:
         print_help()
-        return
+        exit()
 
-    if len(argv) < 3 or len(argv) > 4:
-        print("Invalid number of arguments use --help for usage")
-        return
+    if results.name == 'null':
+        print("Invalid arguments: Please add export name")
+        exit()
 
-    argument = {"path":str(argv[1]),"name":str(argv[2])}
-
-    try:
-        argument["export"] = str(argv[3])
-    except:
-        argument["export"] = "wav"
-
-    return argument
+    if results.filepath == 'null':
+        print("Invalid arguments: Please add import filepath")
+        exit()
+    return results
 
 # Sorting algorithm that will sort using any ints in the track names
 def atoi(text):
@@ -73,15 +89,16 @@ def export_book(book, name, export):
 
 def main():
     #checks arguments
-    info = arg_check(sys.argv)
+    parser = argparse.ArgumentParser(add_help=False)
+    info = arg_parse(parser)
 
     # Update cwd to audiobook location
-    os.chdir(info["path"])
+    os.chdir(info.filepath)
 
     # gather file names and sorts into numerical order and combines into one track
     audiobook = combine_tracks()
 
-    export_book(audiobook, info["name"], info["export"])
+    export_book(audiobook, info.name, info.format)
 
 
 if __name__ == "__main__":

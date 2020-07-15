@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import argparse
+import lookup
 
 debug = False
 
@@ -28,10 +29,7 @@ def arg_parse(parser):
 
     parser.add_argument('name', nargs='?', default='null')
     parser.add_argument('filepath', nargs='?', default='null')
-
     results = parser.parse_args()
-    print(results)
-
     if results.help:
         print_help()
         exit()
@@ -86,11 +84,15 @@ def export_book(book, name, export):
             os.remove(name + "." + export )
             book.export(name + "." + "wav", format="wav")
 
+def add_metadata(filename, metadata):
+    return
 
 def main():
     #checks arguments
     parser = argparse.ArgumentParser(add_help=False)
     info = arg_parse(parser)
+    results = lookup.title_search(info.name)
+    book_metadata = lookup.book_select(results)
 
     # Update cwd to audiobook location
     os.chdir(info.filepath)
@@ -99,7 +101,8 @@ def main():
     audiobook = combine_tracks()
 
     export_book(audiobook, info.name, info.format)
-
+    if book_metadata:
+        add_metadata(info.name + '.' + info.format, book_metadata)
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,10 @@ import re
 import sys
 import argparse
 import lookup
+from mutagen.mp3 import MP3
+from mutagen.easyid3 import EasyID3
+import mutagen.id3
+import time
 
 debug = False
 
@@ -76,15 +80,15 @@ def combine_tracks():
         return audiobook
 
 def export_book(book, name, export):
-        #attempting to export with given format but error will cause an override to wav
-        try:
-            book.export(name + "." + export, format=export)
-        except:
-            print("Unable to export to requested format. Overriding to .WAV")
-            os.remove(name + "." + export )
-            book.export(name + "." + "wav", format="wav")
+        #need to add a format validater
+        book.export(name + "." + export, format=export)
 
 def add_metadata(filename, metadata):
+    mp3file = MP3(filename, ID3=EasyID3)
+    mp3file['title'] = metadata['title']
+    authors = lookup.get_authors(metadata['authors'])
+    mp3file['artist'] = authors
+    mp3file.save()
     return
 
 def main():
@@ -101,7 +105,7 @@ def main():
     audiobook = combine_tracks()
 
     export_book(audiobook, info.name, info.format)
-    if book_metadata:
+    if book_metadata and info.format == 'mp3':
         add_metadata(info.name + '.' + info.format, book_metadata)
 
 if __name__ == "__main__":

@@ -66,7 +66,6 @@ def combine_tracks():
         # combines files into one master track
         for file in tracks:
             if first:
-                #added since I was unable to append to a null variable
                 audiobook = AudioSegment.from_mp3(file)
                 first = False
                 if debug:
@@ -95,7 +94,6 @@ def add_metadata(filename, metadata):
     authors = lookup.get_authors(metadata['authors'])
     mp3file['artist'] = authors
     mp3file['album'] = metadata['title']
-
     mp3file.save() # This be broken
     try:
         audio = MP3(filename, ID3=ID3)
@@ -122,7 +120,11 @@ def main():
     book_metadata = lookup.book_select(results)
 
     # Update cwd to audiobook location
-    os.chdir(info.filepath)
+    try:
+        os.chdir(info.filepath)
+    except FileNotFoundError:
+        print("Unable to change to specified directory")
+        exit()
 
     # gather file names and sorts into numerical order and combines into one track
     audiobook = combine_tracks()

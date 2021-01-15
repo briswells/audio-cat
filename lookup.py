@@ -31,9 +31,9 @@ def book_select(results):
         selection = input("Enter option: ")
         if int(selection) == 11:
             return None
-        else:
-            index = int(selection) - 1
-            return results[index]["volumeInfo"]
+    else:
+        index = int(selection) - 1
+        return results[index]["volumeInfo"]
 
 def get_authors(list):
     if len(list) == 1:

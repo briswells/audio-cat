@@ -7,8 +7,10 @@ import argparse
 import lookup
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3, APIC, error
 import mutagen.id3
 import time
+import wget
 
 debug = False
 
@@ -80,15 +82,36 @@ def combine_tracks():
         return audiobook
 
 def export_book(book, name, export):
-        #need to add a format validater
+    try:
         book.export(name + "." + export, format=export)
+    except:
+        book.export(name + "." + 'wav', format="wav")
 
 def add_metadata(filename, metadata):
+    coverURL = "http://covers.openlibrary.org/b/isbn/" + metadata["industryIdentifiers"][0]["identifier"] + "-L.jpg"
+    coverFileName = wget.download(coverURL)
     mp3file = MP3(filename, ID3=EasyID3)
     mp3file['title'] = metadata['title']
     authors = lookup.get_authors(metadata['authors'])
     mp3file['artist'] = authors
-    mp3file.save()
+    mp3file['album'] = metadata['title']
+
+    mp3file.save() # This be broken
+    try:
+        audio = MP3(filename, ID3=ID3)
+        audio.tags.add(
+        APIC(
+            encoding=3, # 3 is for utf-8
+            mime='image/jpeg', # image/jpeg or image/png
+            type=3, # 3 is for the cover image
+            desc=u'Cover',
+            data=open(coverFileName, 'rb').read()
+            )
+        )
+    except:
+        print('Unable to add cover art')
+    finally:
+        audio.save()
     return
 
 def main():

@@ -1,0 +1,4 @@
+pydub
+eyed3
+requests
+wget

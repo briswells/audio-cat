@@ -1,3 +1,4 @@
 pydub
 requests
 wget
+mutagen
